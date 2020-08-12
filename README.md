@@ -1,4 +1,4 @@
-# aws-ssm-find-replace
+# aws-ssm-parameters-find-replace
 Find and replace AWS SSM parameters by value.
 AWS Console and CLI do not currently provide easy way to filter out parameters by value, so this project is intended to help fill that gap. Using this, you can search parameters which contain the given search string as part of its value, and optionally replace the value with the given replacement string. The script takes care of decrypting the value as well to compare with the given search string.
 
