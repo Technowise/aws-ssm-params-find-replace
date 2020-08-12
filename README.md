@@ -23,3 +23,6 @@ params-find.py [-h] [--profile NAME] [--region AWS::Region]
   --dry-run, -N         Only show the matching parameters and what would be
                         the replaced value without actually replacing.
 ```
+
+### Credits:
+This project borrows code from https://github.com/PaddleHQ/python-aws-ssm for fetching parameter values. The code from this repo is slightly modified to the use case we have for find and replace, and hence we have a copy of parameterstore.py in this repo as well.
