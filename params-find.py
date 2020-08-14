@@ -1,6 +1,6 @@
 #Compare parameters (keys and types) between two environments(lower and higher) prior to deployment/promotion of application.
 ## USAGE:
-# Example: python3 params-find.py -s  staging-rds.invalid.us-west-2.rds.amazonaws.com -r staging-rds-new.invalid.us-west-2.rds.amazonaws.com
+# Example: python3 params-find.py -s staging-rds.invalid.us-west-2.rds.amazonaws.com -r staging-rds-new.invalid.us-west-2.rds.amazonaws.com
 import boto3
 import sys
 import argparse
@@ -14,14 +14,13 @@ parser.add_argument(
     "--profile",
     dest="profile",
     help="AWS Profile to use",
-    metavar="NAME",
-    default='default'
+    metavar="NAME"
 )
 parser.add_argument(
     "--region",
     dest="region",
     help="AWS Region to use",
-    metavar="AWS::Region",
+    metavar="AWS::Region"
 )
 parser.add_argument(
     "--search-path",
@@ -52,18 +51,23 @@ parser.add_argument(
 )
 
 options = parser.parse_args()
-session = boto3.Session(profile_name=options.profile)
-current_environment_store = ParameterStore(session=session)
+
+kwargs = {}
+if options.profile is not None:
+    kwargs["profile_name"] = options.profile
+if options.region is not None:
+    kwargs["region_name"] = options.region
+
+session = boto3.Session(**kwargs)
+param_store = ParameterStore(session=session)
 ssm_client = session.client('ssm')
 search_path = options.search_path
-current_environment_params = current_environment_store.get_parameters_by_path(search_path, recursive=True)
-
-#Replace set 2:
+current_environment_params = param_store.get_parameters_by_path(search_path, recursive=True)
 search_string = options.search
 replace_string = options.replace
+replaced_count = 0
 
 for current_param in current_environment_params:
-    #print(current_param)
     if( current_param['value'].find(search_string) != -1 ):
         print("Path: ", current_param['full_path'])
         print("Value: ", current_param['value'])
@@ -71,5 +75,9 @@ for current_param in current_environment_params:
             print("Replacement Value: ", current_param['value'].replace(search_string, replace_string), "\n")
             if( options.dry_run != True ):
                 ssm_client.put_parameter( Name=current_param['full_path'], Value=current_param['value'].replace(search_string, replace_string), Overwrite=True, Type=current_param['type'])
+                replaced_count += 1
             else:
                 print("No replacement done (--dry-run enabled)\n")
+
+if( replace_string != None ):
+    print("Total replacements done: ", replaced_count)
